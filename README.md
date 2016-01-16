@@ -6,7 +6,7 @@ It provides a simple interface to create a connection and start receiving events
 
 ## Quick Start
 
-```golang
+```go
 slackerAPI := slacker.NewAPIClient(token, "")
 startResult, err := slackerAPI.RTMStart()
 if err != nil {
