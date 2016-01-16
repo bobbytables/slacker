@@ -2,6 +2,7 @@ package slacker
 
 import (
 	"encoding/json"
+	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -11,6 +12,7 @@ type RTMBroker struct {
 	url      string
 	incoming chan []byte
 	outgoing chan []byte
+	events   chan RTMEvent
 	conn     *websocket.Conn
 	closed   bool
 }
@@ -39,8 +41,10 @@ func (b *RTMBroker) Connect() error {
 	b.conn = conn
 	b.incoming = make(chan []byte, 0)
 	b.outgoing = make(chan []byte, 0)
+	b.events = make(chan RTMEvent, 0)
 
 	go b.startRecv()
+	go b.handleEvents()
 
 	return nil
 }
@@ -53,30 +57,32 @@ func (b *RTMBroker) Close() error {
 
 func (b *RTMBroker) startRecv() {
 	for !b.closed {
-		msg, message, _ := b.conn.ReadMessage()
-		if msg == websocket.TextMessage {
+		msgType, message, _ := b.conn.ReadMessage()
+		if msgType == websocket.TextMessage {
+
 			b.incoming <- message
 		}
+
+		time.Sleep(25 * time.Millisecond)
 	}
 }
 
 func (b *RTMBroker) Events() <-chan RTMEvent {
-	events := make(chan RTMEvent)
+	return b.events
+}
 
-	go func() {
-		for !b.closed {
-			raw := json.RawMessage(<-b.incoming)
-			rtmEvent := &RTMEvent{
-				RawMessage: raw,
-			}
+func (b *RTMBroker) handleEvents() {
+	for !b.closed {
+		raw := json.RawMessage(<-b.incoming)
 
-			if err := json.Unmarshal(raw, rtmEvent); err != nil {
-				panic(err)
-			}
-
-			events <- *rtmEvent
+		rtmEvent := RTMEvent{
+			RawMessage: raw,
 		}
-	}()
 
-	return events
+		if err := json.Unmarshal(raw, &rtmEvent); err != nil {
+			panic(err)
+		}
+
+		b.events <- rtmEvent
+	}
 }
