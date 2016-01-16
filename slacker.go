@@ -1,6 +1,7 @@
 package slacker
 
 import (
+	"fmt"
 	"net/http"
 
 	"golang.org/x/oauth2"
@@ -23,9 +24,19 @@ func NewAPIClient(token string, url string) *APIClient {
 
 	tkn := &oauth2.Token{AccessToken: token}
 	source := oauth2.StaticTokenSource(tkn)
+	client := oauth2.NewClient(oauth2.NoContext, source)
 
 	return &APIClient{
-		client:   oauth2.NewClient(oauth2.NoContext, source),
+		client:   client,
 		SlackURL: url,
 	}
+}
+
+func (c *APIClient) slackMethod(method string) (*http.Response, error) {
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s/%s", c.SlackURL, method), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return c.client.Do(req)
 }
