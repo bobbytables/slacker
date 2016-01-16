@@ -2,9 +2,7 @@ package slacker
 
 // RTMStartResult contains the result of rtm.start in the Slack API
 type RTMStartResult struct {
-	Ok    bool   `json:"ok"`
-	Error string `json:"error"`
-	URL   string `json:"url,omitempty"`
+	URL string `json:"url,omitempty"`
 }
 
 // RTMStart issues a start command for RTM. This is isually used for retrieving

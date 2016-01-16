@@ -17,6 +17,7 @@ func TestRTM(t *testing.T) {
 					panic(err)
 				}
 			}))
+			Reset(func() { server.Close() })
 
 			client := NewAPIClient("my-token", server.URL)
 			result, err := client.RTMStart()
