@@ -4,6 +4,8 @@ Slacker is a Golang package to easily integrate with the Slack RTM API. (Real Ti
 
 It provides a simple interface to create a connection and start receiving events.
 
+![demo](http://i.imgur.com/dJ986o3.gif)
+
 ## Quick Start
 
 ```go
