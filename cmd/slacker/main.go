@@ -5,60 +5,51 @@ import (
 	"os"
 
 	"github.com/bobbytables/slacker"
+	"github.com/codegangsta/cli"
 )
 
 // This command line tool is mostly used to just see if you're wired up
 // correctly. If you're making contributions this is a good tool to modify
 // to do smoke testing.
 func main() {
-	token := os.Getenv("SLACK_TOKEN")
-	if token == "" {
-		fmt.Println("You must set SLACK_TOKEN")
-		os.Exit(1)
-	}
+	app := cli.NewApp()
+	app.Usage = "runs methods against the Slack API and returns the result"
+	app.Author = "Bobby Tables <me@bobbytables.io>"
+	app.Name = "slacker"
+	app.Commands = []cli.Command{slackMethod()}
 
-	slackerAPI := slacker.NewAPIClient(token, "")
-	startResult, err := slackerAPI.RTMStart()
-	if err != nil {
-		fmt.Printf("Error: %q\n", err.Error())
-		os.Exit(1)
-	}
-
-	users := map[string]string{}
-	slackUsers, err := slackerAPI.UsersList()
-	if err != nil {
-		fmt.Printf("Error: %q\n", err.Error())
-		os.Exit(1)
-	}
-
-	for _, user := range slackUsers {
-		users[user.ID] = user.Profile.RealName
-	}
-
-	broker := slacker.NewRTMBroker(startResult)
-	if err := broker.Connect(); err != nil {
-		fmt.Printf("Error: %q\n", err.Error())
-		os.Exit(1)
-	}
-
-	msg := slacker.RTMMessage{
-		Text: "Hello",
-	}
-
-	broker.Publish(msg)
+	app.Run(os.Args)
 }
 
-func printMessage(e slacker.RTMEvent, users map[string]string) {
-	msg, err := e.Message()
-	if err != nil {
-		return
-	}
+func slackMethod() cli.Command {
+	return cli.Command{
+		Name:  "run",
+		Usage: "[method]",
+		Flags: []cli.Flag{
+			cli.StringFlag{
+				Name:   "token",
+				Usage:  "Your Slack API token",
+				EnvVar: "SLACK_TOKEN",
+			},
+		},
+		Description: "Hits the SlackAPI using the format: https://slack.com/api/{method}",
+		Action: func(ctx *cli.Context) {
+			if len(ctx.Args()) == 0 {
+				cli.ShowSubcommandHelp(ctx)
+				return
+			}
 
-	var uName string
-	uName, ok := users[msg.User]
-	if !ok {
-		uName = "unknown"
-	}
+			method := ctx.Args()[0]
+			token := ctx.String("token")
 
-	fmt.Printf("%s: %s\n", uName, msg.Text)
+			client := slacker.NewAPIClient(token, "")
+			b, err := client.RunMethod(method)
+			if err != nil {
+				fmt.Printf("Error running method: %s", err.Error())
+				return
+			}
+
+			fmt.Println(string(b))
+		},
+	}
 }

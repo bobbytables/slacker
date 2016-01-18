@@ -2,6 +2,7 @@ package slacker
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
 )
 
@@ -26,6 +27,17 @@ func NewAPIClient(token string, url string) *APIClient {
 		token:    token,
 		SlackURL: url,
 	}
+}
+
+// RunMethod runs an RPC method and returns the response body as a byte slice
+func (c *APIClient) RunMethod(name string) ([]byte, error) {
+	resp, err := c.slackMethod(name)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	return ioutil.ReadAll(resp.Body)
 }
 
 func (c *APIClient) slackMethod(method string) (*http.Response, error) {
