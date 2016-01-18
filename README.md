@@ -1,5 +1,8 @@
 # Slacker
 
+[![GoDoc](https://godoc.org/github.com/bobbytables/slacker?status.svg)](https://godoc.org/github.com/bobbytables/slacker)
+[![Build Status](https://travis-ci.org/bobbytables/slacker.svg?branch=master)](https://travis-ci.org/bobbytables/slacker)
+
 Slacker is a Golang package to easily integrate with the Slack RTM API. (Real Time Messaging).
 
 It provides a simple interface to create a connection and start receiving events.
@@ -31,3 +34,4 @@ for {
   }
 }
 ```
+
