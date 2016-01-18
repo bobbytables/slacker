@@ -32,6 +32,7 @@ func NewRTMBroker(s *RTMStartResult) *RTMBroker {
 	return broker
 }
 
+// Connect connects to the RTM Websocket
 func (b *RTMBroker) Connect() error {
 	conn, _, err := websocket.DefaultDialer.Dial(b.url, nil)
 	if err != nil {
@@ -40,7 +41,6 @@ func (b *RTMBroker) Connect() error {
 
 	b.conn = conn
 	b.incoming = make(chan []byte, 0)
-	b.outgoing = make(chan []byte, 0)
 	b.events = make(chan RTMEvent, 0)
 
 	go b.startRecv()
@@ -55,6 +55,22 @@ func (b *RTMBroker) Close() error {
 	return b.conn.Close()
 }
 
+// Events returns a receive-only channel for all Events RTM API pushes
+// to the broker.
+func (b *RTMBroker) Events() <-chan RTMEvent {
+	return b.events
+}
+
+// Publish pushes an event to the RTM Websocket
+func (b *RTMBroker) Publish(e Publishable) error {
+	d, err := e.Publishable()
+	if err != nil {
+		return err
+	}
+
+	return b.conn.WriteMessage(websocket.TextMessage, d)
+}
+
 func (b *RTMBroker) startRecv() {
 	for !b.closed {
 		msgType, message, _ := b.conn.ReadMessage()
@@ -65,10 +81,6 @@ func (b *RTMBroker) startRecv() {
 
 		time.Sleep(25 * time.Millisecond)
 	}
-}
-
-func (b *RTMBroker) Events() <-chan RTMEvent {
-	return b.events
 }
 
 func (b *RTMBroker) handleEvents() {
