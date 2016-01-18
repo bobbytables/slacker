@@ -8,6 +8,8 @@ import (
 
 var sf *gosnow.SnowFlake
 
+// Some events pushed to Slack require an ID that is always incrementing,
+// the Snowflake ID generator is perfect for this.
 func init() {
 	snowflake, err := gosnow.Default()
 	if err != nil {

@@ -37,3 +37,13 @@ func (c *APIClient) slackMethod(method string) (*http.Response, error) {
 
 	return c.client.Do(req)
 }
+
+func (c *APIClient) slackMethodAndParse(method string, dest interface{}) error {
+	resp, err := c.slackMethod(method)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	return ParseResponse(resp.Body, dest)
+}
