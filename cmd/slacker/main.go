@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"time"
 
 	"github.com/bobbytables/slacker"
 )
@@ -25,18 +24,41 @@ func main() {
 		os.Exit(1)
 	}
 
+	users := map[string]string{}
+	slackUsers, err := slackerAPI.UsersList()
+	if err != nil {
+		fmt.Printf("Error: %q\n", err.Error())
+		os.Exit(1)
+	}
+
+	for _, user := range slackUsers {
+		users[user.ID] = user.Profile.RealName
+	}
+
 	broker := slacker.NewRTMBroker(startResult)
 	if err := broker.Connect(); err != nil {
 		fmt.Printf("Error: %q\n", err.Error())
 		os.Exit(1)
 	}
 
-	for {
-		select {
-		case event := <-broker.Events():
-			fmt.Println(event.Type)
-		default:
-			time.Sleep(10 * time.Millisecond)
-		}
+	msg := slacker.RTMMessage{
+		Text: "Hello",
 	}
+
+	broker.Publish(msg)
+}
+
+func printMessage(e slacker.RTMEvent, users map[string]string) {
+	msg, err := e.Message()
+	if err != nil {
+		return
+	}
+
+	var uName string
+	uName, ok := users[msg.User]
+	if !ok {
+		uName = "unknown"
+	}
+
+	fmt.Printf("%s: %s\n", uName, msg.Text)
 }
