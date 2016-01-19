@@ -74,3 +74,8 @@ for {
   }
 }
 ```
+
+
+# License
+
+Slacker is released under the [MIT License](LICENSE.md).
