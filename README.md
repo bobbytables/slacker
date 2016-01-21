@@ -18,13 +18,13 @@ how to use slacker for simple things.
 c := slacker.NewAPIClient("your-slack-token", "")
 channels, err := c.ChannelsList()
 if err != nil {
-  panic(err)
+	panic(err)
 }
 
 // Map channels so we can easily retrieve a channel by name.
 mappedChannels := map[string]*slacker.Channel{}
 for _, channel := range channels {
-  mappedChannels[channel.Name] = channel
+	mappedChannels[channel.Name] = channel
 }
 
 fmt.Printf("Channels: %+v", mappedChannels)
@@ -36,12 +36,12 @@ fmt.Printf("Channels: %+v", mappedChannels)
 c := slacker.NewAPIClient("your-slack-token", "")
 users, err := c.UsersList()
 if err != nil {
-  panic(err)
+	panic(err)
 }
 
 mappedUsers := map[string]*slacker.User{}
 for _, user := range users {
-  mappedUsers[user.ID] = user
+	mappedUsers[user.ID] = user
 }
 ```
 
@@ -54,24 +54,24 @@ come in.
 c := slacker.NewAPIClient("your-slack-token", "")
 rtmStart, err := c.RTMStart()
 if err != nil {
-  panic(err)
+	panic(err)
 }
 
 broker := slacker.NewRTMBroker(rtmStart)
 broker.Connect()
 
 for {
-  event := <-broker.Events()
-  fmt.Println(event.Type)
+	event := <-broker.Events()
+	fmt.Println(event.Type)
 
-  if event.Type == "message" {
-    msg, err := event.Message()
-    if err != nil {
-      panic(err)
-    }
+	if event.Type == "message" {
+		msg, err := event.Message()
+		if err != nil {
+			panic(err)
+		}
 
-    fmt.Println(msg.Text)
-  }
+		fmt.Println(msg.Text)
+	}
 }
 ```
 
